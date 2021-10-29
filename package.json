@@ -1,0 +1,17 @@
+{
+  "name": "FishingPai-ChatRoom",
+  "version": "1.0.0",
+  "description": "摸鱼派聊天室",
+  "main": "main.js",
+  "author": "csfwff",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^15.3.0"
+  },
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron-drag": "^2.0.0"
+  }
+}
