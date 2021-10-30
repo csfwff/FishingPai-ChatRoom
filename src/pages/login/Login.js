@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import './Login.less';
 import request from '../../utils/Http';
-import { Input ,Button} from 'antd';
+import { Input ,Button, message} from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import SparkMD5 from 'spark-md5'
 
 type Props = {
     history: Object,
@@ -10,7 +11,8 @@ type Props = {
 
 class Login extends Component<Props, State> {
 
-
+    account = ""
+    pwd = ""
 
     state = {
         loading: false,
@@ -22,13 +24,14 @@ class Login extends Component<Props, State> {
     }
 
     componentDidMount() {
-        document.title = "摸鱼派登录";
+        document.title = "登录";
         if (document.body !== null) {
             document.body.style.backgroundColor = '#FFFFFF';
         }
-        let userCookie = window.cookie.get('shopId');
+        let userCookie = window.cookie.get('sym-ce');
         if (userCookie !== undefined && userCookie !== null && userCookie !== 'undefined' && userCookie.length > 0) {
-            this.props.history.replace({ pathname: 'home' });
+            this.props.history.replace({ pathname: 'chat' });
+            window.electron.ipcRenderer.send('token',userCookie)
         }
         console.log(userCookie);
     }
@@ -43,12 +46,11 @@ class Login extends Component<Props, State> {
         return (
             <div className="Login">
                 <div className="inputBox">
-
                     <img src={require("../../img/mplogo_128.png").default} className="LogoImg" alt="logo" />
-                    <Input disabled="this.state.loading" className="inputItem" size="large" placeholder="用户名" prefix={<UserOutlined />} />
-                    <Input.Password disabled="this.state.loading" className="inputItem" size="large" placeholder="密码" prefix={<LockOutlined />} />
+                    <Input disabled={this.state.loading} className="inputItem" size="large" placeholder="用户名" onChange={(e)=>this.account=e.target.value} prefix={<UserOutlined />} />
+                    <Input.Password disabled={this.state.loading} className="inputItem" size="large" placeholder="密码" onChange={(e)=>this.pwd=e.target.value} prefix={<LockOutlined />} />
 
-                    <Button type="primary" loading="this.state.loading" className="loginBtn">
+                    <Button type="primary" loading={this.state.loading} className="loginBtn" onClick={()=>this._login()}>
                         登录
                     </Button>
                 </div>
@@ -71,9 +73,9 @@ class Login extends Component<Props, State> {
     _validatePhoneForm = () => {
         let formIsOk = false;
         if (this.account.length === 0) {
-            this._showAlert('请输入账号');
+            message.error('请输入账号');
         } else if (this.pwd.length === 0) {
-            this._showAlert('请输入密码');
+            message.error('请输入密码');
         } else {
             formIsOk = true;
         }
@@ -83,28 +85,38 @@ class Login extends Component<Props, State> {
     _loginRequest = () => {
         if (!this.doing) {
             this.doing = true;
-            this._showModal();
+
+            this.setState({
+                loading:true
+            })
 
             let postData = {
-                login: this.account,
-                pwd: this.pwd
+                nameOrEmail: this.account,
+                rememberLogin:true,
+                userPassword: SparkMD5.hash(this.pwd)
             }
 
-            // request('api/web/shop/login', postData)
-            //     .then((data) => {
-            //         this.doing = false;
-            //         this._hiddenModal();
-            //         if (data.code === 0) {
-            //             window.cookie.set('shopId', data.data.id);
-            //             this._goNextPage('home');
-            //         } else {
-            //             this._showToast(data.msg);
-            //         }
-            //     }).catch((error) => {
-            //         this.doing = false;
-            //         this._hiddenModal();
-            //         this._failToast();
-            //     });
+            console.log(postData);
+
+            request('login', postData)
+                .then((data) => {
+                    this.doing = false;
+                    this.setState({
+                        loading:false
+                    })
+                    if (data.code === 0) {
+                        window.cookie.set('sym-ce', data.token);
+                        window.electron.ipcRenderer.send('token',data.token)
+                        this._goNextPage('chat');
+                    } else {
+                        message.error(data.msg);
+                    }
+                }).catch((error) => {
+                    this.setState({
+                        loading:false
+                    })
+                    message.error('网络连接异常');
+                });
         }
     }
 

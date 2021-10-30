@@ -7,6 +7,7 @@ import { HashRouter as Router, Route } from "react-router-dom";
 // import "./utils/fixed"
 
 import Login from './pages/login/Login'
+import Chat from './pages/chat/Chat'
 
 const root = document.getElementById('root');
 
@@ -15,6 +16,7 @@ if (root !== null) {
     <Router>
       <div className='index'>
         <Route exact path="/" component={Login} />  {/* 登录 */}
+        <Route exact path="/chat" component={Chat} />  {/* 聊天 */}
       </div>
     </Router>,
     root
