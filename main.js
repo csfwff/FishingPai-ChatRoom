@@ -35,9 +35,9 @@ function createWindow () {
         }
     };
     mainWindow = new BrowserWindow(windowOptions);
-    mainWindow.loadURL("http://localhost:3000/");
+    //mainWindow.loadURL("http://localhost:3000/");
     // mainWindow.loadURL("http://pwl.icu/");
-    //mainWindow.loadURL(path.join('file://', __dirname, '/build/index.html'));
+    mainWindow.loadURL(path.join('file://', __dirname, '/build/index.html'));
     //接收渲染进程的信息
     const ipc = require('electron').ipcMain;
     ipc.on('min', function () {
@@ -54,6 +54,14 @@ function createWindow () {
             details.requestHeaders['Cookie'] = 'sym-ce='+a
             callback({ requestHeaders: details.requestHeaders })
           })
+
+        //   mainWindow.webContents.session.cookies.set({
+        //     url: 'https://pwl.icu', 
+        //     name: 'sym-ce',
+        //     value: a,
+        //     domain: '.pwl.icu', 
+        //     expirationDate: 99999999999
+        //   })
     })
 
     //如果是--debug 打开开发者工具，窗口最大化，
